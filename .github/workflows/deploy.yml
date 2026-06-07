@@ -1,0 +1,66 @@
+name: Deploy hub to GitHub Pages
+
+# The site is hand-written static files in site/ (no build step). This workflow mirrors the
+# latest private APX release into site/apx/feed, then publishes site/ to GitHub Pages at
+# projects.lulustudio.dk.
+#
+# Requires (repo Settings -> Secrets and variables -> Actions):
+#   FEED_TOKEN  fine-grained PAT, resource owner LuluStudioX, repo AlbionPacketExplorer,
+#               permission Contents: Read-only. Secret names cannot start with GITHUB_.
+# Requires the repo to be PUBLIC (Pages on the free plan) and Settings -> Pages
+#   source = GitHub Actions.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  repository_dispatch:
+    types: [apx-release] # optional: APX CI can POST here for an instant feed refresh
+  schedule:
+    # Safety net only. The instant path is repository_dispatch (apx-release) from APX CI.
+    # GitHub's floor is every 5 min (*/5); scheduled runs are best-effort and can lag under load.
+    - cron: '*/15 * * * *' # every 15 min
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Never run two deploys at once; let the latest win.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+env:
+  FEED_REPO: LuluStudioX/AlbionPacketExplorer
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mirror APX feed into site
+        env:
+          FEED_TOKEN: ${{ secrets.FEED_TOKEN }}
+        run: |
+          if [ -z "${FEED_TOKEN}" ]; then
+            echo "::warning::FEED_TOKEN not set - skipping feed mirror (downloads will 404)"
+            exit 0
+          fi
+          chmod +x deploy/mirror-feed.sh
+          deploy/mirror-feed.sh site/apx/feed || \
+            echo "::warning::feed mirror failed - deploying site without a fresh feed"
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
