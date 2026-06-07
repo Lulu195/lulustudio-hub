@@ -179,6 +179,27 @@ function openDetails(collection, name) {
   if (!dialog.open) dialog.showModal();
   setHash(item.slug);
   dialog.querySelector('[data-close]').focus();
+  refreshLiveVersion(dialog); // override the baked release version with the live feed's
+}
+
+// The baked release version is a snapshot. When a card has a served feed, read the
+// current version straight from it (same-origin) so the panel never goes stale.
+async function refreshLiveVersion(dialog) {
+  const line = dialog.querySelector('.details__release[data-feed]');
+  if (!line || typeof fetch !== 'function') return;
+  try {
+    const response = await fetch(`${line.dataset.feed}/releases.win-x64.json`, { cache: 'no-store' });
+    if (!response.ok) return;
+    const manifest = await response.json();
+    const version = manifest.Assets && manifest.Assets[0] && manifest.Assets[0].Version;
+    if (!version) return;
+    const slot = line.querySelector('[data-release-version]');
+    const meta = line.querySelector('[data-release-meta]');
+    if (slot) slot.textContent = `v${String(version).replace(/^v/, '')}`;
+    if (meta) meta.textContent = 'live';
+  } catch {
+    /* offline or feed missing: keep the baked snapshot */
+  }
 }
 
 function openDetailsBySlug(slug) {
@@ -225,7 +246,7 @@ function renderDetails(collection, item) {
       </div>
       <p class="details__description">${escapeHtml(item.summary || item.blurb)}</p>
       ${renderFacts(item.facts)}
-      ${renderReleaseLine(item.release)}
+      ${renderReleaseLine(item)}
       ${renderModalDownloads(item.downloads)}
       ${renderStatGrid(item.stats)}
       ${renderLanguageBar(item.languages)}
@@ -239,9 +260,11 @@ function renderDetails(collection, item) {
     </div>`;
 }
 
-function renderReleaseLine(release) {
+function renderReleaseLine(item) {
+  const release = item.release;
   if (!release || !release.version) return '';
-  return `<p class="details__release">Latest release <strong>${escapeHtml(release.version)}</strong> · ${escapeHtml(formatRelativeDate(release.date))}</p>`;
+  const feedAttr = item.feed ? ` data-feed="${escapeAttribute(item.feed)}"` : '';
+  return `<p class="details__release"${feedAttr}>Latest release <strong data-release-version>${escapeHtml(release.version)}</strong> · <span data-release-meta>${escapeHtml(formatRelativeDate(release.date))}</span></p>`;
 }
 
 function renderModalDownloads(downloads) {
