@@ -254,6 +254,7 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 .badge--private { color: var(--color-text-faint); border-color: var(--color-border-strong); }
 .badge--fork { color: var(--color-text-muted); border-color: var(--color-border-strong); }
 .badge--discord { color: #aab0f7; border-color: color-mix(in srgb, #5865f2 55%, transparent); background: rgba(88, 101, 242, 0.12); }
+.badge--version { color: var(--color-accent); border-color: color-mix(in srgb, var(--color-accent) 45%, transparent); background: var(--color-accent-soft); text-transform: none; }
 .badge__icon { display: inline-block; vertical-align: -1px; }
 
 /* ── code block ── */

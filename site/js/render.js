@@ -11,7 +11,29 @@ function renderHub() {
   fillEveryDownloadContainer();
   stampLiveCount();
   stampCurrentYear();
+  refreshCardVersions(); // live version chips read from the served feed
   openDetailsFromHash(); // deep-link: /#slug opens that card's details
+}
+
+function refreshCardVersions() {
+  document.querySelectorAll('[data-live-version][data-feed]').forEach(async (el) => {
+    const version = await fetchFeedVersion(el.dataset.feed);
+    if (version) el.textContent = version;
+  });
+}
+
+// Read the current version from a served feed manifest (same-origin). Returns 'vX.Y.Z' or null.
+async function fetchFeedVersion(feedBase) {
+  if (typeof fetch !== 'function') return null;
+  try {
+    const response = await fetch(`${feedBase}/releases.win-x64.json`, { cache: 'no-store' });
+    if (!response.ok) return null;
+    const manifest = await response.json();
+    const version = manifest.Assets && manifest.Assets[0] && manifest.Assets[0].Version;
+    return version ? `v${String(version).replace(/^v/, '')}` : null;
+  } catch {
+    return null;
+  }
 }
 
 function stampLiveCount() {
@@ -57,6 +79,8 @@ function toCardModel(collectionName, item) {
     description: item.blurb,
     icon: cardIcon(item),
     badges: cardBadges(item),
+    release: item.release,
+    feed: item.feed,
     statline: statline(item.stats),
     tags: techStack(item),
     actions: cardActions(item, isBot),
@@ -86,10 +110,11 @@ function cardActions(item, isBot) {
 
 /* ── card model -> HTML ───────────────────────────────────────── */
 
-function renderCard({ collection, name, description, icon, badges, statline, tags, actions }) {
+function renderCard({ collection, name, description, icon, badges, release, feed, statline, tags, actions }) {
+  const meta = badges.map(renderBadge).join('') + renderVersionBadge(release, feed);
   return `
     <article class="card">
-      ${badges.length ? `<div class="card__meta">${badges.map(renderBadge).join('')}</div>` : ''}
+      ${meta ? `<div class="card__meta">${meta}</div>` : ''}
       <div class="card__head">
         ${renderIcon(icon)}
         <h3 class="card__title">${renderTitle(collection, name)}</h3>
@@ -109,6 +134,13 @@ function renderIcon(icon) {
 // The title opens the details panel (same as the "details" action).
 function renderTitle(collection, name) {
   return `<button type="button" class="card__title-btn" data-details-collection="${escapeAttribute(collection)}" data-details-name="${escapeAttribute(name)}">${escapeHtml(name)} <span class="card__title-arrow" aria-hidden="true">→</span></button>`;
+}
+
+// A version chip on the card face. Carries the live-fetch hook when a feed is served.
+function renderVersionBadge(release, feed) {
+  if (!release || !release.version) return '';
+  const liveAttrs = feed ? ` data-live-version data-feed="${escapeAttribute(feed)}"` : '';
+  return `<span class="badge badge--version"${liveAttrs}>${escapeHtml(release.version)}</span>`;
 }
 
 function renderBadge({ label, variant, dot, icon }) {
@@ -186,20 +218,13 @@ function openDetails(collection, name) {
 // current version straight from it (same-origin) so the panel never goes stale.
 async function refreshLiveVersion(dialog) {
   const line = dialog.querySelector('.details__release[data-feed]');
-  if (!line || typeof fetch !== 'function') return;
-  try {
-    const response = await fetch(`${line.dataset.feed}/releases.win-x64.json`, { cache: 'no-store' });
-    if (!response.ok) return;
-    const manifest = await response.json();
-    const version = manifest.Assets && manifest.Assets[0] && manifest.Assets[0].Version;
-    if (!version) return;
-    const slot = line.querySelector('[data-release-version]');
-    const meta = line.querySelector('[data-release-meta]');
-    if (slot) slot.textContent = `v${String(version).replace(/^v/, '')}`;
-    if (meta) meta.textContent = 'live';
-  } catch {
-    /* offline or feed missing: keep the baked snapshot */
-  }
+  if (!line) return;
+  const version = await fetchFeedVersion(line.dataset.feed);
+  if (!version) return; // offline or feed missing: keep the baked snapshot
+  const slot = line.querySelector('[data-release-version]');
+  const meta = line.querySelector('[data-release-meta]');
+  if (slot) slot.textContent = version;
+  if (meta) meta.textContent = 'live';
 }
 
 function openDetailsBySlug(slug) {
