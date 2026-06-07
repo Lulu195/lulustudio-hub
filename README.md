@@ -33,18 +33,20 @@ breakdown. Desktop apps auto-update from a feed the site serves.
 ### Apps and projects
 | Project | What it does | Stack |
 |---|---|---|
-| **[AlbionPacketExplorer](https://projects.lulustudio.dk/apx/)** | Captures Albion's network traffic live and decodes every packet, for protocol reverse-engineering. Self-updating desktop app. | C# · Avalonia |
-| **wos-java-bot** | Automates Whiteout Survival by driving Android emulators. | Java |
+| **[AlbionPacketExplorer (APX)](https://projects.lulustudio.dk/apx/)** | Captures Albion's network traffic live and decodes every packet, for protocol reverse-engineering. Self-updating desktop app. | C# · Avalonia |
+| **WOS - Java App** | Automates Whiteout Survival by driving Android emulators. | Java |
+| **GitRekt** | Whiteout Survival automation: resource management, combat, city upgrades, and alliance tasks (Android / LDPlayer). | Python |
 
 ### Bots
-All three are Discord bots, self-hosted via Docker, each with its own job. See them on the
+All Discord bots, self-hosted via Docker, each with its own job. See them on the
 **[bots page →](https://projects.lulustudio.dk/bots/)**
 
 | Bot | What it does | Stack |
 |---|---|---|
-| **The Discord Butler** | Albion info: item lookup, live market prices, crafting bonuses, guild utilities. | Python |
-| **MICAR Discord** | Guild bot: objective tracking, black-zone map data, guild utilities. | Node.js |
-| **discord-utc-bot** | TimeKeeper: tracks members' UTC offsets and shows local times. | Node.js |
+| **AO-Butler** | Albion info: item lookup, live market prices, crafting bonuses, and guild utilities. | Python |
+| **AO-Micar** | MICAR guild bot: objective tracking, black-zone map data, and guild utilities. | Node.js |
+| **TimeKeeper** | Tracks members' UTC offsets and shows local times across the server. | Node.js |
+| **GitRekt - Discord** | Whiteout Survival bot: smart troop-training calculators, event stats with OCR, and guild utilities. | Python |
 
 ## How it works
 

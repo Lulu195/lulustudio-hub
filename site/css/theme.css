@@ -27,7 +27,8 @@
   --color-accent-faint: rgba(214, 160, 82, 0.06);
 
   /* ── color: status ── */
-  --color-live: #8aa86b;                       /* muted green: live / success */
+  --color-live: #8aa86b;                       /* muted green: success / sparkline */
+  --color-live-bright: #a6e27a;                /* vivid green: live indicator */
   --color-live-soft: rgba(138, 168, 107, 0.12);
   --color-warn: #c2705a;
 

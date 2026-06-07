@@ -9,7 +9,14 @@ document.addEventListener('click', handleDetailsClick);
 function renderHub() {
   fillEveryCardContainer();
   fillEveryDownloadContainer();
+  stampLiveCount();
   stampCurrentYear();
+  openDetailsFromHash(); // deep-link: /#slug opens that card's details
+}
+
+function stampLiveCount() {
+  const slot = document.querySelector('[data-live-count]');
+  if (slot) slot.textContent = String(HUB.projects.length + HUB.bots.length);
 }
 
 function fillEveryCardContainer() {
@@ -48,7 +55,7 @@ function toCardModel(collectionName, item) {
     collection: collectionName,
     name: item.name,
     description: item.blurb,
-    titleHref: isBot ? item.invite || item.repo : item.page ? `/${item.page}/` : item.repo,
+    icon: cardIcon(item),
     badges: cardBadges(item),
     statline: statline(item.stats),
     tags: techStack(item),
@@ -59,6 +66,7 @@ function toCardModel(collectionName, item) {
 function cardBadges(item) {
   const badges = [];
   if (item.status) badges.push(statusBadge(item.status));
+  if (item.platform === 'Discord') badges.push({ label: 'Discord', variant: 'discord', icon: discordIcon() });
   if (item.fork) badges.push({ label: 'fork', variant: 'fork', icon: forkIcon() });
   if (item.private) badges.push({ label: 'private', variant: 'private' });
   return badges;
@@ -78,11 +86,14 @@ function cardActions(item, isBot) {
 
 /* ── card model -> HTML ───────────────────────────────────────── */
 
-function renderCard({ name, description, titleHref, badges, statline, tags, actions }) {
+function renderCard({ collection, name, description, icon, badges, statline, tags, actions }) {
   return `
     <article class="card">
       ${badges.length ? `<div class="card__meta">${badges.map(renderBadge).join('')}</div>` : ''}
-      <h3 class="card__title">${renderTitle(name, titleHref)}</h3>
+      <div class="card__head">
+        ${renderIcon(icon)}
+        <h3 class="card__title">${renderTitle(collection, name)}</h3>
+      </div>
       <p class="card__description">${escapeHtml(description)}</p>
       ${renderTechStack(tags)}
       ${renderStatline(statline)}
@@ -90,9 +101,14 @@ function renderCard({ name, description, titleHref, badges, statline, tags, acti
     </article>`;
 }
 
-function renderTitle(name, href) {
-  if (!href) return escapeHtml(name);
-  return `<a href="${escapeAttribute(href)}"${externalAttributes(href)}>${escapeHtml(name)} <span class="card__title-arrow" aria-hidden="true">${arrowFor(href)}</span></a>`;
+function renderIcon(icon) {
+  if (!icon) return '';
+  return `<img class="card__icon" src="${escapeAttribute(icon)}" alt="" width="30" height="30" loading="lazy" />`;
+}
+
+// The title opens the details panel (same as the "details" action).
+function renderTitle(collection, name) {
+  return `<button type="button" class="card__title-btn" data-details-collection="${escapeAttribute(collection)}" data-details-name="${escapeAttribute(name)}">${escapeHtml(name)} <span class="card__title-arrow" aria-hidden="true">→</span></button>`;
 }
 
 function renderBadge({ label, variant, dot, icon }) {
@@ -108,10 +124,13 @@ function renderStatline(statline) {
 
 function renderTechStack(stack) {
   if (!stack || stack.length === 0) return '';
-  const chips = stack
-    .map((tech, index) => `<li class="tech"><span class="tech__dot lang-bar__seg--${index}" aria-hidden="true"></span>${escapeHtml(tech)}</li>`)
-    .join('');
+  const chips = stack.map((tech) => `<li class="tech">${renderTechLogo(tech)}${escapeHtml(tech)}</li>`).join('');
   return `<div class="card__stack"><span class="card__stack-label">stack</span><ul class="tech-list">${chips}</ul></div>`;
+}
+
+function renderTechLogo(language) {
+  const url = languageIconUrl(language);
+  return url ? `<img class="tech__logo" src="${escapeAttribute(url)}" alt="" width="13" height="13" loading="lazy" />` : '';
 }
 
 function renderActions(actions) {
@@ -141,18 +160,36 @@ function renderEmptyState() {
 
 /* ── details dialog ───────────────────────────────────────────── */
 
+let lastTrigger = null; // card control to refocus when the dialog closes
+
 function handleDetailsClick(event) {
   const trigger = event.target.closest('[data-details-name]');
   if (!trigger) return;
-  const item = findByName(trigger.dataset.detailsCollection, trigger.dataset.detailsName);
-  if (item) openDetails(item);
+  // Remember the originating card control, but not when navigating inside the dialog.
+  if (!trigger.closest('#details-dialog')) lastTrigger = trigger;
+  openDetails(trigger.dataset.detailsCollection, trigger.dataset.detailsName);
 }
 
-function openDetails(item) {
+function openDetails(collection, name) {
+  const item = findByName(collection, name);
+  if (!item) return;
   const dialog = ensureDialog();
-  dialog.innerHTML = renderDetails(item);
+  dialog.innerHTML = renderDetails(collection, item);
   dialog.querySelector('[data-close]').addEventListener('click', () => dialog.close());
-  dialog.showModal();
+  if (!dialog.open) dialog.showModal();
+  setHash(item.slug);
+  dialog.querySelector('[data-close]').focus();
+}
+
+function openDetailsBySlug(slug) {
+  for (const collection of ['projects', 'bots']) {
+    const item = (HUB[collection] || []).find((entry) => entry.slug === slug);
+    if (item) {
+      lastTrigger = null;
+      openDetails(collection, item.name);
+      return;
+    }
+  }
 }
 
 function ensureDialog() {
@@ -162,6 +199,7 @@ function ensureDialog() {
     dialog.id = 'details-dialog';
     dialog.className = 'details';
     dialog.addEventListener('click', closeDialogOnBackdrop);
+    dialog.addEventListener('close', onDialogClose);
     document.body.appendChild(dialog);
   }
   return dialog;
@@ -171,13 +209,24 @@ function closeDialogOnBackdrop(event) {
   if (event.target.id === 'details-dialog') event.target.close();
 }
 
-function renderDetails(item) {
+function onDialogClose() {
+  clearHash();
+  if (lastTrigger) lastTrigger.focus();
+}
+
+function renderDetails(collection, item) {
   return `
     <div class="details__panel">
       <button type="button" class="details__close" data-close aria-label="Close">✕</button>
       <div class="card__meta">${cardBadges(item).map(renderBadge).join('')}</div>
-      <h2 class="details__title">${escapeHtml(item.name)}</h2>
+      <div class="details__heading-row">
+        ${renderIcon(cardIcon(item))}
+        <h2 class="details__title">${escapeHtml(item.name)}</h2>
+      </div>
       <p class="details__description">${escapeHtml(item.summary || item.blurb)}</p>
+      ${renderFacts(item.facts)}
+      ${renderReleaseLine(item.release)}
+      ${renderModalDownloads(item.downloads)}
       ${renderStatGrid(item.stats)}
       ${renderLanguageBar(item.languages)}
       ${renderActivityChart(item.activity)}
@@ -186,7 +235,59 @@ function renderDetails(item) {
         ${item.page ? `<a class="button" href="/${escapeAttribute(item.page)}/">open page →</a>` : ''}
         ${item.invite ? `<a class="button" href="${escapeAttribute(item.invite)}" target="_blank" rel="noopener">invite ↗</a>` : ''}
       </div>
+      ${renderModalNav(collection, item)}
     </div>`;
+}
+
+function renderReleaseLine(release) {
+  if (!release || !release.version) return '';
+  return `<p class="details__release">Latest release <strong>${escapeHtml(release.version)}</strong> · ${escapeHtml(formatRelativeDate(release.date))}</p>`;
+}
+
+function renderModalDownloads(downloads) {
+  if (!downloads || downloads.length === 0) return '';
+  return `
+    <div class="details__block">
+      <p class="details__heading">Download</p>
+      <div class="download-grid">${downloads.map(renderDownload).join('')}</div>
+    </div>`;
+}
+
+function renderModalNav(collection, item) {
+  const siblings = sortedByOrder(HUB[collection]);
+  const index = siblings.findIndex((entry) => entry.slug === item.slug);
+  return `
+    <nav class="details__nav">
+      ${navButton('prev', collection, siblings[index - 1])}
+      <span class="details__nav-count">${index + 1} / ${siblings.length}</span>
+      ${navButton('next', collection, siblings[index + 1])}
+    </nav>`;
+}
+
+function navButton(direction, collection, sibling) {
+  const arrow = direction === 'prev' ? '←' : '→';
+  if (!sibling) return `<span class="details__nav-btn details__nav-btn--off" aria-hidden="true">${arrow}</span>`;
+  const label = direction === 'prev' ? `${arrow} ${escapeHtml(sibling.name)}` : `${escapeHtml(sibling.name)} ${arrow}`;
+  return `<button type="button" class="details__nav-btn" data-details-collection="${escapeAttribute(collection)}" data-details-name="${escapeAttribute(sibling.name)}">${label}</button>`;
+}
+
+function setHash(slug) {
+  history.replaceState(null, '', `#${slug}`);
+}
+
+function clearHash() {
+  history.replaceState(null, '', location.pathname + location.search);
+}
+
+function openDetailsFromHash() {
+  if (!location.hash || !document.querySelector('[data-cards]')) return;
+  openDetailsBySlug(decodeURIComponent(location.hash.slice(1)));
+}
+
+function renderFacts(facts) {
+  if (!facts || facts.length === 0) return '';
+  const items = facts.map((fact) => `<li class="fact">${escapeHtml(fact)}</li>`).join('');
+  return `<ul class="facts">${items}</ul>`;
 }
 
 function renderStatGrid(stats) {
@@ -210,7 +311,13 @@ function renderLanguageBar(languages) {
     .map((language, index) => `<span class="lang-bar__seg lang-bar__seg--${index}" style="width:${language.percent}%" title="${escapeAttribute(`${language.name} ${language.percent}%`)}"></span>`)
     .join('');
   const legend = languages
-    .map((language, index) => `<li><span class="lang-bar__chip lang-bar__seg--${index}" aria-hidden="true"></span>${escapeHtml(language.name)} <span class="lang-bar__pct">${language.percent}%</span></li>`)
+    .map((language, index) => {
+      const logo = languageIconUrl(language.name);
+      const mark = logo
+        ? `<img class="tech__logo" src="${escapeAttribute(logo)}" alt="" width="14" height="14" loading="lazy" />`
+        : `<span class="lang-bar__chip lang-bar__seg--${index}" aria-hidden="true"></span>`;
+      return `<li>${mark}${escapeHtml(language.name)} <span class="lang-bar__pct">${language.percent}%</span></li>`;
+    })
     .join('');
   return `
     <div class="details__block">
@@ -222,20 +329,46 @@ function renderLanguageBar(languages) {
 
 function renderActivityChart(activity) {
   if (!activity || activity.length === 0 || sum(activity) === 0) {
-    return '<div class="details__block"><p class="details__heading">Commit activity (52 weeks)</p><p class="empty-state">No commits in the last year.</p></div>';
+    return '<div class="details__block"><p class="details__heading">Commit activity <span class="details__heading-note">52 weeks</span></p><p class="empty-state">No commits in the last year.</p></div>';
   }
   const peak = Math.max(...activity);
+  const weeks = activity.length;
   const bars = activity
-    .map((count) => `<span class="spark__bar" style="height:${Math.max(2, Math.round((count / peak) * 100))}%" title="${count} commits"></span>`)
+    .map((count, index) => {
+      const height = Math.max(2, Math.round((count / peak) * 100));
+      const tooltip = `${count} commit${count === 1 ? '' : 's'} · ${weekLabel(weeks - 1 - index)}`;
+      return `<span class="spark__bar" style="height:${height}%" title="${escapeAttribute(tooltip)}"></span>`;
+    })
     .join('');
   return `
     <div class="details__block">
       <p class="details__heading">Commit activity <span class="details__heading-note">52 weeks · ${sum(activity)} commits</span></p>
       <div class="spark" role="img" aria-label="Weekly commits over the last year">${bars}</div>
+      <div class="spark-axis"><span>1y ago</span><span>6mo</span><span>now</span></div>
     </div>`;
 }
 
+function weekLabel(weeksAgo) {
+  if (weeksAgo <= 0) return 'this week';
+  if (weeksAgo === 1) return 'last week';
+  return `${weeksAgo} weeks ago`;
+}
+
 /* ── small helpers ────────────────────────────────────────────── */
+
+// A per-card icon: an explicit override, else a tech logo from the primary language.
+function cardIcon(item) {
+  if (item.icon) return item.icon;
+  return languageIconUrl(item.stats && item.stats.language);
+}
+
+function languageIconUrl(language) {
+  const slug = {
+    'C#': 'csharp', Java: 'java', Python: 'python', JavaScript: 'javascript',
+    TypeScript: 'typescript', CSS: 'css3', HTML: 'html5', Shell: 'bash', Dockerfile: 'docker',
+  }[language];
+  return slug ? `https://cdn.jsdelivr.net/gh/devicons/devicon/icons/${slug}/${slug}-original.svg` : null;
+}
 
 // The card's tech stack: the repo's significant languages (>=1%), newest first.
 function techStack(item) {
@@ -273,6 +406,10 @@ function sum(numbers) {
 
 function forkIcon() {
   return '<svg class="badge__icon" viewBox="0 0 16 16" width="11" height="11" aria-hidden="true" fill="currentColor"><path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v.878A2.25 2.25 0 0 0 5.75 8.5h1.5v2.128a2.251 2.251 0 1 0 1.5 0V8.5h1.5a2.25 2.25 0 0 0 2.25-2.25v-.878a2.25 2.25 0 1 0-1.5 0v.878a.75.75 0 0 1-.75.75h-4.5A.75.75 0 0 1 5 6.25v-.878ZM11 2.5a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Zm-3 8.75a.75.75 0 1 0 0 1.5.75.75 0 0 0 0-1.5Z"></path></svg>';
+}
+
+function discordIcon() {
+  return '<svg class="badge__icon" viewBox="0 0 24 24" width="12" height="12" aria-hidden="true" fill="currentColor"><path d="M20.317 4.369A19.79 19.79 0 0 0 16.558 3c-.2.36-.43.84-.59 1.23a18.27 18.27 0 0 0-3.937 0A12.6 12.6 0 0 0 11.44 3 19.74 19.74 0 0 0 7.68 4.369C4.337 9.39 3.43 14.28 3.882 19.1a19.9 19.9 0 0 0 5.993 3.04c.484-.66.915-1.36 1.286-2.096-.703-.265-1.376-.593-2.02-.978.17-.124.335-.253.494-.386a14.2 14.2 0 0 0 12.13 0c.16.14.326.27.495.386-.646.385-1.323.713-2.022.98.37.735.8 1.434 1.285 2.094a19.84 19.84 0 0 0 5.995-3.04c.532-5.586-.91-10.432-3.812-14.732ZM9.68 15.33c-1.183 0-2.157-1.085-2.157-2.42 0-1.334.955-2.42 2.157-2.42 1.21 0 2.176 1.095 2.157 2.42 0 1.335-.955 2.42-2.157 2.42Zm4.64 0c-1.183 0-2.157-1.085-2.157-2.42 0-1.334.955-2.42 2.157-2.42 1.21 0 2.176 1.095 2.157 2.42 0 1.335-.946 2.42-2.157 2.42Z"></path></svg>';
 }
 
 function formatYear(isoDate) {

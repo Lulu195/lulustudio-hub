@@ -48,12 +48,17 @@ jobs:
           FEED_TOKEN: ${{ secrets.FEED_TOKEN }}
         run: |
           if [ -z "${FEED_TOKEN}" ]; then
-            echo "::warning::FEED_TOKEN not set - skipping feed mirror (downloads will 404)"
+            echo "::warning::FEED_TOKEN not set - deploying site without the APX feed"
             exit 0
           fi
           chmod +x deploy/mirror-feed.sh
-          deploy/mirror-feed.sh site/apx/feed || \
-            echo "::warning::feed mirror failed - deploying site without a fresh feed"
+          deploy/mirror-feed.sh site/apx/feed
+          # If the mirror produced no manifest (token revoked/expired, API hiccup), abort the
+          # deploy so GitHub Pages keeps serving the last good feed instead of wiping it.
+          ls site/apx/feed/releases.*.json >/dev/null 2>&1 || {
+            echo "::error::feed mirror produced no manifest - aborting to keep the last good feed live"
+            exit 1
+          }
 
       - uses: actions/configure-pages@v5
 
