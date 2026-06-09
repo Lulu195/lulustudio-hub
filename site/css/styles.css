@@ -275,15 +275,25 @@ a:focus-visible, button:focus-visible, [tabindex]:focus-visible {
 /* ── download grid (apx) ── */
 .download-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: var(--space-md); }
 .download {
-  display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.2em var(--space-sm);
-  padding: var(--space-md) var(--space-lg);
+  display: flex; flex-direction: column;
   background: var(--color-card); border: 1px solid var(--color-border); border-radius: var(--radius-md);
   transition: border-color 0.18s ease, transform 0.18s ease;
 }
 .download:hover { border-color: var(--color-accent); transform: translateY(-2px); }
+.download__main { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.2em var(--space-sm); padding: var(--space-md) var(--space-lg); }
 .download__label { color: var(--color-heading); font-weight: 600; }
 .download__platform { grid-column: 1; font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-text-faint); }
 .download__arrow { grid-row: 1 / 3; grid-column: 2; color: var(--color-accent); font-size: 1.2rem; }
+.download__portable {
+  display: flex; align-items: center; gap: 0.4em;
+  padding: 0.55em var(--space-lg);
+  border-top: 1px solid var(--color-border);
+  font-family: var(--font-mono); font-size: 0.72rem; color: var(--color-text-muted);
+}
+.download__portable:hover { color: var(--color-accent); }
+
+/* breathing room between the download grid and the note under it */
+.download-grid + .fine-print { margin-top: var(--space-lg); }
 
 /* ── footer ── */
 .site-footer { border-top: 1px solid var(--color-border); padding-block: var(--space-2xl); color: var(--color-text-faint); font-family: var(--font-mono); font-size: 0.78rem; }

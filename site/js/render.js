@@ -177,13 +177,16 @@ function renderAction(action) {
   return `<a class="card__action" href="${escapeAttribute(action.url)}"${externalAttributes(action.url)}>${escapeHtml(action.label)}<span aria-hidden="true"> ${arrowFor(action.url)}</span></a>`;
 }
 
-function renderDownload({ label, platform, url }) {
+function renderDownload({ label, platform, url, portable }) {
   return `
-    <a class="download" href="${escapeAttribute(url)}">
-      <span class="download__label">${escapeHtml(label)}</span>
-      <span class="download__platform">${escapeHtml(platform)}</span>
-      <span class="download__arrow" aria-hidden="true">↓</span>
-    </a>`;
+    <div class="download">
+      <a class="download__main" href="${escapeAttribute(url)}">
+        <span class="download__label">${escapeHtml(label)}</span>
+        <span class="download__platform">${escapeHtml(platform)}</span>
+        <span class="download__arrow" aria-hidden="true">↓</span>
+      </a>
+      ${portable ? `<a class="download__portable" href="${escapeAttribute(portable)}">portable .zip <span aria-hidden="true">↓</span></a>` : ''}
+    </div>`;
 }
 
 function renderEmptyState() {

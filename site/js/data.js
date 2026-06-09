@@ -9,8 +9,8 @@ const HUB = {
       "blurb": "Cross-platform desktop tool that captures Albion Online network traffic live and decodes every packet, for reverse-engineering the game protocol.",
       "summary": "Captures Albion Online’s Photon traffic off the wire (or loads saved captures) and decodes every event, request, and response. Includes a code aggregator, a filterable packet list, a per-packet param grid with a curated schema and item-name resolution, request/response correlation with field diffing, and constructor-scaffolding export. Built in C# with Avalonia; auto-updates via Velopack on Windows, Linux, and macOS.",
       "release": {
-        "version": "v0.7.1",
-        "date": "2026-06-07"
+        "version": "v0.10.1",
+        "date": "2026-06-09"
       },
       "feed": "/apx/feed",
       "icon": "data:image/png;base64,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",
@@ -29,17 +29,20 @@ const HUB = {
         {
           "label": "Windows installer",
           "platform": "win-x64",
-          "url": "/apx/feed/AlbionPacketExplorer-win-x64-Setup.exe"
+          "url": "/apx/feed/AlbionPacketExplorer-win-x64-Setup.exe",
+          "portable": "/apx/feed/AlbionPacketExplorer-win-x64-Portable.zip"
         },
         {
           "label": "macOS (Intel)",
           "platform": "osx-x64",
-          "url": "/apx/feed/AlbionPacketExplorer-osx-x64-Setup.pkg"
+          "url": "/apx/feed/AlbionPacketExplorer-osx-x64-Setup.pkg",
+          "portable": "/apx/feed/AlbionPacketExplorer-osx-x64-Portable.zip"
         },
         {
           "label": "macOS (Apple Silicon)",
           "platform": "osx-arm64",
-          "url": "/apx/feed/AlbionPacketExplorer-osx-arm64-Setup.pkg"
+          "url": "/apx/feed/AlbionPacketExplorer-osx-arm64-Setup.pkg",
+          "portable": "/apx/feed/AlbionPacketExplorer-osx-arm64-Portable.zip"
         },
         {
           "label": "Linux AppImage",
@@ -54,18 +57,18 @@ const HUB = {
         "stars": 0,
         "forks": 0,
         "created": "2026-05-29",
-        "updated": "2026-06-07",
+        "updated": "2026-06-09",
         "language": "C#",
-        "commitsLastYear": 109
+        "commitsLastYear": 148
       },
       "languages": [
         {
           "name": "C#",
-          "percent": 95
+          "percent": 91
         },
         {
           "name": "Python",
-          "percent": 5
+          "percent": 9
         },
         {
           "name": "Shell",
@@ -127,8 +130,8 @@ const HUB = {
         0,
         0,
         0,
-        47,
-        62
+        55,
+        93
       ],
       "order": 1
     },
@@ -156,7 +159,7 @@ const HUB = {
         "created": "2025-03-24",
         "updated": "2026-06-07",
         "language": "Java",
-        "commitsLastYear": 739
+        "commitsLastYear": 738
       },
       "languages": [
         {
@@ -169,34 +172,34 @@ const HUB = {
         }
       ],
       "activity": [
-        28,
-        8,
-        3,
-        15,
-        38,
-        29,
         30,
-        7,
+        2,
+        9,
+        11,
+        40,
+        34,
+        27,
+        1,
         0,
         1,
-        6,
-        11,
+        7,
+        12,
         13,
-        6,
-        44,
-        79,
-        143,
-        91,
-        57,
-        37,
         21,
-        3,
-        0,
+        62,
+        60,
+        156,
+        78,
+        49,
+        37,
         13,
-        30,
-        7,
         3,
-        11,
+        12,
+        3,
+        31,
+        4,
+        8,
+        6,
         0,
         0,
         0,
@@ -207,8 +210,7 @@ const HUB = {
         1,
         0,
         0,
-        1,
-        1,
+        2,
         0,
         1,
         0,
@@ -220,7 +222,8 @@ const HUB = {
         0,
         0,
         0,
-        0
+        0,
+        3
       ],
       "order": 2
     },
@@ -370,10 +373,8 @@ const HUB = {
         0,
         0,
         0,
-        0,
-        3,
-        0,
-        0,
+        1,
+        2,
         0,
         0,
         0,
@@ -413,8 +414,10 @@ const HUB = {
         0,
         0,
         0,
-        21,
-        8,
+        0,
+        0,
+        29,
+        0,
         0,
         0
       ],
@@ -512,13 +515,13 @@ const HUB = {
         0,
         0,
         1,
-        0,
-        79,
-        119,
-        158,
-        175,
-        11,
-        5
+        20,
+        67,
+        163,
+        189,
+        92,
+        16,
+        0
       ],
       "order": 2
     },
@@ -588,8 +591,7 @@ const HUB = {
         0,
         0,
         0,
-        4,
-        2,
+        6,
         0,
         0,
         0,
@@ -611,6 +613,7 @@ const HUB = {
         0,
         0,
         2,
+        0,
         0,
         0
       ],
