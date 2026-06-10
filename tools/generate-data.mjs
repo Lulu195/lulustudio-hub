@@ -18,14 +18,14 @@ if (!token) {
   process.exit(1);
 }
 
+const HEADERS = {
+  Authorization: `Bearer ${token}`,
+  Accept: "application/vnd.github+json",
+  "X-GitHub-Api-Version": "2022-11-28",
+};
+
 const api = async (path, { retries = 0 } = {}) => {
-  const res = await fetch(`https://api.github.com${path}`, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-  });
+  const res = await fetch(`https://api.github.com${path}`, { headers: HEADERS });
   // 202 = stats still being computed server-side; retry briefly, else give up gracefully.
   if (res.status === 202 && retries < 5) {
     await new Promise((r) => setTimeout(r, 3000));
@@ -37,6 +37,30 @@ const api = async (path, { retries = 0 } = {}) => {
 };
 
 const slugOf = (repoUrl) => repoUrl.replace("https://github.com/", "");
+
+// /stats/commit_activity is computed lazily server-side and stays empty for a while after a repo
+// is created or transferred. When it yields nothing, rebuild the 52 weekly buckets from the commit
+// list itself (capped at 500 commits; enough for these repos and bounded in API calls).
+async function activityFromCommits(repoPath) {
+  const weekMs = 7 * 24 * 3600 * 1000;
+  const sinceMs = Date.now() - 52 * weekMs;
+  const since = new Date(sinceMs).toISOString();
+  const weeks = new Array(52).fill(0);
+  for (let page = 1; page <= 5; page++) {
+    const res = await fetch(
+      `https://api.github.com/repos/${repoPath}/commits?since=${since}&per_page=100&page=${page}`,
+      { headers: HEADERS });
+    if (!res.ok) break;
+    const commits = await res.json();
+    for (const c of commits) {
+      const t = Date.parse(c.commit?.committer?.date ?? c.commit?.author?.date ?? "");
+      if (Number.isNaN(t)) continue;
+      weeks[Math.min(51, Math.max(0, Math.floor((t - sinceMs) / weekMs)))]++;
+    }
+    if (commits.length < 100) break;
+  }
+  return weeks;
+}
 
 async function enrich(entry) {
   const repoPath = slugOf(entry.repo);
@@ -53,7 +77,9 @@ async function enrich(entry) {
   ]);
 
   const weeks = Array.isArray(activityRaw) ? activityRaw.map((w) => w.total) : [];
-  const activity = weeks.length === 52 ? weeks : new Array(52).fill(0);
+  let activity = weeks.length === 52 ? weeks : new Array(52).fill(0);
+  if (activity.every((v) => v === 0))
+    activity = await activityFromCommits(repoPath);
 
   const langTotal = Object.values(languages ?? {}).reduce((a, b) => a + b, 0);
   const languageList = Object.entries(languages ?? {})

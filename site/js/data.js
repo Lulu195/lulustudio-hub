@@ -340,7 +340,7 @@ const HUB = {
         "created": "2026-06-08",
         "updated": "2026-06-10",
         "language": "TypeScript",
-        "commitsLastYear": 0
+        "commitsLastYear": 23
       },
       "languages": [
         {
@@ -412,7 +412,7 @@ const HUB = {
         0,
         0,
         0,
-        0
+        23
       ],
       "order": 4
     }
