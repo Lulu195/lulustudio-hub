@@ -46,6 +46,20 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
+      # Re-fetch live repo data (stars, languages, commit activity, latest release) for the
+      # project cards so site/js/data.js never goes stale. STATS_TOKEN: fine-grained PAT,
+      # resource owner LuluStudioX, all (or the showcased) repositories, Contents: Read-only.
+      # Without the secret the committed data.js ships as-is.
+      - name: Refresh project card data
+        env:
+          STATS_TOKEN: ${{ secrets.STATS_TOKEN }}
+        run: |
+          if [ -z "$STATS_TOKEN" ]; then
+            echo "::warning::STATS_TOKEN not set - project card stats stay as committed"
+            exit 0
+          fi
+          GH_TOKEN="$STATS_TOKEN" node tools/generate-data.mjs
+
       - name: Mirror APX feed into site
         env:
           FEED_TOKEN: ${{ secrets.FEED_TOKEN }}
