@@ -146,7 +146,7 @@ const HUB = {
         "Android emulators",
         "Desktop"
       ],
-      "repo": "https://github.com/Lulu195/wos-java-bot",
+      "repo": "https://github.com/LuluStudioX/wos-java-bot",
       "private": true,
       "fork": false,
       "archived": false,
@@ -314,6 +314,42 @@ const HUB = {
         0
       ],
       "order": 3
+    },
+    {
+      "name": "SkatMate",
+      "slug": "skatmate",
+      "blurb": "Tax helper for Denmark: calculators and guides for non-Danish residents filing via skat.dk.",
+      "summary": "SkatMate helps non-Danish residents navigate the Danish tax system with calculators and plain-language guides for filing via skat.dk. In early development.",
+      "facts": [
+        "Tax calculators",
+        "Denmark / skat.dk",
+        "Early development"
+      ],
+      "repo": "https://github.com/LuluStudioX/skatmate",
+      "private": true,
+      "fork": false,
+      "archived": false,
+      "status": "wip",
+      "tags": [
+        "tax",
+        "denmark"
+      ],
+      "stats": {
+        "stars": 0,
+        "forks": 0,
+        "created": "2026-06-08",
+        "updated": "2026-06-10",
+        "language": null,
+        "commitsLastYear": 1
+      },
+      "languages": [],
+      "activity": [
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1
+      ],
+      "order": 4
     }
   ],
   "bots": [
