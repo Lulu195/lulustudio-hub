@@ -1,14 +1,20 @@
 name: Deploy hub to GitHub Pages
 
 # The site is hand-written static files in site/ (no build step). This workflow mirrors the
-# latest private APX release into site/apx/feed, then publishes site/ to GitHub Pages at
-# projects.lulustudio.dk.
+# latest private APX release into site/apx/feed, then force-pushes the whole site as ONE orphan
+# commit to the gh-pages branch, which GitHub Pages serves at projects.lulustudio.dk.
+#
+# Why a branch deploy instead of actions/deploy-pages: the artifact-based deploy staged the whole
+# site (release binaries included, ~0.7 GB) in Actions artifact storage on EVERY run - at the
+# 15-min schedule that piled up ~20 GB/day, exhausted the account artifact quota and broke every
+# upload account-wide. A branch deploy uses no artifact storage at all, and the branch always
+# holds exactly one commit so the repo never grows with history.
 #
 # Requires (repo Settings -> Secrets and variables -> Actions):
 #   FEED_TOKEN  fine-grained PAT, resource owner LuluStudioX, repo AlbionPacketExplorer,
 #               permission Contents: Read-only. Secret names cannot start with GITHUB_.
 # Requires the repo to be PUBLIC (Pages on the free plan) and Settings -> Pages
-#   source = GitHub Actions.
+#   source = Deploy from a branch: gh-pages, / (root).
 
 on:
   push:
@@ -22,9 +28,7 @@ on:
     - cron: '*/15 * * * *' # every 15 min
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write # force-push the gh-pages branch
 
 # Never run two deploys at once; let the latest win.
 concurrency:
@@ -39,9 +43,6 @@ env:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
     steps:
       - uses: actions/checkout@v5
 
@@ -62,12 +63,29 @@ jobs:
             exit 1
           }
 
-      - uses: actions/configure-pages@v5
+      - name: Publish site to gh-pages branch
+        run: |
+          # CNAME keeps the custom domain bound for branch-based Pages; .nojekyll skips the
+          # pointless Jekyll pass over an already-static site.
+          echo "projects.lulustudio.dk" > site/CNAME
+          touch site/.nojekyll
 
-      - uses: actions/upload-pages-artifact@v3
-        with:
-          path: site
+          # Content stamp over every served byte. If gh-pages already carries this exact stamp,
+          # there is nothing to deploy - the 15-min schedule is a safety net and usually no-ops.
+          stamp=$(cd site && find . -type f ! -name STAMP -print0 | sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1)
+          if git fetch --depth 1 origin gh-pages 2>/dev/null && \
+             [ "$(git show FETCH_HEAD:STAMP 2>/dev/null || true)" = "$stamp" ]; then
+            echo "site unchanged (stamp $stamp); skipping deploy"
+            exit 0
+          fi
+          echo "$stamp" > site/STAMP
 
-      - name: Deploy to GitHub Pages
-        id: deploy
-        uses: actions/deploy-pages@v4
+          # One orphan commit, force-pushed: gh-pages never accumulates history, so the repo
+          # stays at roughly the size of one site snapshot.
+          cd site
+          git init -b gh-pages
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "deploy site (stamp ${stamp})"
+          git push --force "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
