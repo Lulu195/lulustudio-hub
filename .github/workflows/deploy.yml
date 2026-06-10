@@ -29,6 +29,7 @@ on:
 
 permissions:
   contents: write # force-push the gh-pages branch
+  actions: write  # sweep GitHub's internal pages-build-deployment artifacts
 
 # Never run two deploys at once; let the latest win.
 concurrency:
@@ -45,6 +46,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
+      # GitHub's internal pages-build-deployment workflow (branch -> Pages) stages the whole site
+      # as a "github-pages" artifact (~750 MB with the mirrored binaries). Pages serves from its
+      # own storage once deployed, so stale copies only eat the Actions artifact quota - the exact
+      # failure mode this workflow was redesigned to avoid. Sweep copies older than 6 hours; a
+      # deployment finishes in minutes, so anything older is guaranteed dead weight.
+      - name: Sweep stale Pages artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api "repos/${GITHUB_REPOSITORY}/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.name == "github-pages" and (.created_at | fromdateiso8601) < (now - 21600)) | .id' |
+          while read -r id; do
+            gh api -X DELETE "repos/${GITHUB_REPOSITORY}/actions/artifacts/$id" >/dev/null \
+              && echo "deleted stale pages artifact $id"
+          done
 
       # Re-fetch live repo data (stars, languages, commit activity, latest release) for the
       # project cards so site/js/data.js never goes stale. STATS_TOKEN: fine-grained PAT,
