@@ -4,7 +4,7 @@
       "name": "AlbionPacketExplorer (APX)",
       "slug": "apx",
       "blurb": "Cross-platform desktop tool that captures Albion Online network traffic live and decodes every packet, for reverse-engineering the game protocol.",
-      "summary": "Captures Albion Online’s Photon traffic off the wire (or loads saved captures) and decodes every event, request, and response. Includes a code aggregator, a filterable packet list, a per-packet param grid with a curated schema and item-name resolution, request/response correlation with field diffing, and constructor-scaffolding export. Built in C# with Avalonia; auto-updates via Velopack on Windows, Linux, and macOS.",
+      "summary": "Captures Albion Onlineâ€™s Photon traffic off the wire (or loads saved captures) and decodes every event, request, and response. Includes a code aggregator, a filterable packet list, a per-packet param grid with a curated schema and item-name resolution, request/response correlation with field diffing, and constructor-scaffolding export. Built in C# with Avalonia; auto-updates via Velopack on Windows, Linux, and macOS.",
       "facts": [
         "Desktop app",
         "Windows / Linux / macOS",
@@ -49,7 +49,7 @@
       "name": "WOS - Java App",
       "slug": "wos-java-app",
       "blurb": "Automation tool for Whiteout Survival: a Java app that drives Android emulators to run the game.",
-      "summary": "WOS Bot automates Whiteout Survival by controlling Android emulators from a Java application. Maintained by LuluStudio. Note: automating gameplay may violate the game’s terms of service; use at your own risk.",
+      "summary": "WOS Bot automates Whiteout Survival by controlling Android emulators from a Java application. Maintained by LuluStudio. Note: automating gameplay may violate the gameâ€™s terms of service; use at your own risk.",
       "facts": [
         "Game automation",
         "Android emulators",
@@ -66,7 +66,7 @@
       "name": "GitRekt",
       "slug": "gitrekt",
       "blurb": "Advanced automation bot for Whiteout Survival: resource management, combat, city upgrades, and alliance tasks.",
-      "summary": "GitRekt automates repetitive Whiteout Survival tasks so players can focus on strategy: resource management, combat, city upgrades, and alliance tasks. Runs on Android (no root) and is optimized for LDPlayer to drive multiple instances at once. Note: automating gameplay may violate the game’s terms of service; use at your own risk.",
+      "summary": "GitRekt automates repetitive Whiteout Survival tasks so players can focus on strategy: resource management, combat, city upgrades, and alliance tasks. Runs on Android (no root) and is optimized for LDPlayer to drive multiple instances at once. Note: automating gameplay may violate the gameâ€™s terms of service; use at your own risk.",
       "facts": [
         "Game automation",
         "Android / LDPlayer",
@@ -100,7 +100,8 @@
     {
       "name": "OpenToWork",
       "slug": "opentowork",
-      "blurb": "Self-hosted AI job-application system: scrapes job portals, scores fit against a candidate profile, tailors CVs and cover letters, and tracks applications — driven by Claude Code.",
+      "icon": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJBSSBKb2IgU2VhcmNoIj4KICA8ZGVmcz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0icmluZyIgeDE9IjAiIHkxPSIwIiB4Mj0iMSIgeTI9IjEiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiM0ZmUwYzQiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIxIiBzdG9wLWNvbG9yPSIjMDBjOWE3Ii8+CiAgICA8L2xpbmVhckdyYWRpZW50PgogIDwvZGVmcz4KICA8cmVjdCB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiIgcng9IjExMiIgZmlsbD0iIzBiMGEwOSIvPgogIDxnIGZpbGw9Im5vbmUiIHN0cm9rZT0idXJsKCNyaW5nKSIgc3Ryb2tlLXdpZHRoPSIzMCI+CiAgICA8Y2lyY2xlIGN4PSIyNTYiIGN5PSIyNTYiIHI9IjE5MCIvPgogICAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIxMDYiLz4KICA8L2c+CiAgPGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSIzMiIgZmlsbD0idXJsKCNyaW5nKSIvPgo8L3N2Zz4K",
+      "blurb": "Self-hosted AI job-application system: scrapes job portals, scores fit against a candidate profile, tailors CVs and cover letters, and tracks applications â€” driven by Claude Code.",
       "summary": "OpenToWork runs the whole job hunt as a pipeline: it scrapes five job portals, ranks and enriches postings against a candidate profile, then drives a headless Claude Code pipeline that evaluates fit, drafts tailored LaTeX CVs and cover letters, and prepares interview talking points. A Bun + SQLite web app serves the dashboard: matches, an application tracker and kanban, company and market intelligence, in-browser profile onboarding, a PDF viewer with .tex editor, and usage analytics. Multi-user behind a login gate; ships as a single Docker container.",
       "facts": [
         "Web app + Claude Code pipeline",
@@ -156,7 +157,7 @@
     {
       "name": "TimeKeeper",
       "slug": "timekeeper",
-      "blurb": "TimeKeeper: a lightweight Discord bot that tracks each member’s UTC offset and shows local times across the server.",
+      "blurb": "TimeKeeper: a lightweight Discord bot that tracks each memberâ€™s UTC offset and shows local times across the server.",
       "summary": "TimeKeeper is a minimal Node.js Discord bot. Members set their UTC offset; slash commands show their local time and list saved offsets. Stores data in SQLite/JSON. Self-hostable via Docker with a persistent data volume.",
       "facts": [
         "Discord bot",
