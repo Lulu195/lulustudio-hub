@@ -96,6 +96,24 @@
         "denmark"
       ],
       "order": 4
+    },
+    {
+      "name": "OpenToWork",
+      "slug": "opentowork",
+      "blurb": "Self-hosted AI job-application system: scrapes job portals, scores fit against a candidate profile, tailors CVs and cover letters, and tracks applications — driven by Claude Code.",
+      "summary": "OpenToWork runs the whole job hunt as a pipeline: it scrapes five job portals, ranks and enriches postings against a candidate profile, then drives a headless Claude Code pipeline that evaluates fit, drafts tailored LaTeX CVs and cover letters, and prepares interview talking points. A Bun + SQLite web app serves the dashboard: matches, an application tracker and kanban, company and market intelligence, in-browser profile onboarding, a PDF viewer with .tex editor, and usage analytics. Multi-user behind a login gate; ships as a single Docker container.",
+      "facts": [
+        "Web app + Claude Code pipeline",
+        "Bun + SQLite, single Docker container",
+        "Scrapes 5 job portals"
+      ],
+      "repo": "https://github.com/LuluStudioX/opentowork",
+      "status": "beta",
+      "tags": [
+        "jobs",
+        "claude-code"
+      ],
+      "order": 5
     }
   ],
   "bots": [

@@ -9,7 +9,7 @@ const HUB = {
       "blurb": "Cross-platform desktop tool that captures Albion Online network traffic live and decodes every packet, for reverse-engineering the game protocol.",
       "summary": "Captures Albion Online’s Photon traffic off the wire (or loads saved captures) and decodes every event, request, and response. Includes a code aggregator, a filterable packet list, a per-packet param grid with a curated schema and item-name resolution, request/response correlation with field diffing, and constructor-scaffolding export. Built in C# with Avalonia; auto-updates via Velopack on Windows, Linux, and macOS.",
       "release": {
-        "version": "v0.14.0",
+        "version": "v0.15.0",
         "date": "2026-06-10"
       },
       "feed": "/apx/feed",
@@ -59,16 +59,24 @@ const HUB = {
         "created": "2026-05-29",
         "updated": "2026-06-10",
         "language": "C#",
-        "commitsLastYear": 193
+        "commitsLastYear": 209
       },
       "languages": [
         {
           "name": "C#",
-          "percent": 93
+          "percent": 91
         },
         {
           "name": "Python",
           "percent": 6
+        },
+        {
+          "name": "JavaScript",
+          "percent": 1
+        },
+        {
+          "name": "PowerShell",
+          "percent": 1
         },
         {
           "name": "Shell",
@@ -131,7 +139,7 @@ const HUB = {
         0,
         46,
         57,
-        90
+        106
       ],
       "order": 1
     },
@@ -358,6 +366,10 @@ const HUB = {
         {
           "name": "CSS",
           "percent": 1
+        },
+        {
+          "name": "Shell",
+          "percent": 0
         }
       ],
       "activity": [
@@ -415,6 +427,127 @@ const HUB = {
         23
       ],
       "order": 4
+    },
+    {
+      "name": "OpenToWork",
+      "slug": "opentowork",
+      "blurb": "Self-hosted AI job-application system: scrapes job portals, scores fit against a candidate profile, tailors CVs and cover letters, and tracks applications — driven by Claude Code.",
+      "summary": "OpenToWork runs the whole job hunt as a pipeline: it scrapes five job portals, ranks and enriches postings against a candidate profile, then drives a headless Claude Code pipeline that evaluates fit, drafts tailored LaTeX CVs and cover letters, and prepares interview talking points. A Bun + SQLite web app serves the dashboard: matches, an application tracker and kanban, company and market intelligence, in-browser profile onboarding, a PDF viewer with .tex editor, and usage analytics. Multi-user behind a login gate; ships as a single Docker container.",
+      "facts": [
+        "Web app + Claude Code pipeline",
+        "Bun + SQLite, single Docker container",
+        "Scrapes 5 job portals"
+      ],
+      "repo": "https://github.com/LuluStudioX/opentowork",
+      "private": true,
+      "fork": false,
+      "archived": false,
+      "status": "beta",
+      "tags": [
+        "jobs",
+        "claude-code"
+      ],
+      "stats": {
+        "stars": 0,
+        "forks": 0,
+        "created": "2026-06-04",
+        "updated": "2026-06-11",
+        "language": "TypeScript",
+        "commitsLastYear": 156
+      },
+      "languages": [
+        {
+          "name": "TypeScript",
+          "percent": 52
+        },
+        {
+          "name": "JavaScript",
+          "percent": 21
+        },
+        {
+          "name": "CSS",
+          "percent": 9
+        },
+        {
+          "name": "HTML",
+          "percent": 8
+        },
+        {
+          "name": "TeX",
+          "percent": 5
+        },
+        {
+          "name": "Python",
+          "percent": 4
+        },
+        {
+          "name": "Shell",
+          "percent": 1
+        },
+        {
+          "name": "Dockerfile",
+          "percent": 1
+        },
+        {
+          "name": "PowerShell",
+          "percent": 0
+        }
+      ],
+      "activity": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        5,
+        5,
+        0,
+        0,
+        0,
+        0,
+        92,
+        53
+      ],
+      "order": 5
     }
   ],
   "bots": [
