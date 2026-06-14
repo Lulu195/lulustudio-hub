@@ -1,7 +1,7 @@
 name: Deploy hub to GitHub Pages
 
 # The site is hand-written static files in site/ (no build step). This workflow mirrors the
-# latest private APX release into site/apx/feed, then force-pushes the whole site as ONE orphan
+# latest APX release into site/apx/feed, then force-pushes the whole site as ONE orphan
 # commit to the gh-pages branch, which GitHub Pages serves at projects.lulustudio.dk.
 #
 # Why a branch deploy instead of actions/deploy-pages: the artifact-based deploy staged the whole
@@ -11,8 +11,6 @@ name: Deploy hub to GitHub Pages
 # holds exactly one commit so the repo never grows with history.
 #
 # Requires (repo Settings -> Secrets and variables -> Actions):
-#   FEED_TOKEN  fine-grained PAT, resource owner LuluStudioX, repo AlbionPacketExplorer,
-#               permission Contents: Read-only. Secret names cannot start with GITHUB_.
 # Requires the repo to be PUBLIC (Pages on the free plan) and Settings -> Pages
 #   source = Deploy from a branch: gh-pages, / (root).
 
@@ -81,13 +79,9 @@ jobs:
         env:
           FEED_TOKEN: ${{ secrets.FEED_TOKEN }}
         run: |
-          if [ -z "${FEED_TOKEN}" ]; then
-            echo "::warning::FEED_TOKEN not set - deploying site without the APX feed"
-            exit 0
-          fi
           chmod +x deploy/mirror-feed.sh
           deploy/mirror-feed.sh site/apx/feed
-          # If the mirror produced no manifest (token revoked/expired, API hiccup), abort the
+          # If the mirror produced no manifest (API hiccup), abort the
           # deploy so GitHub Pages keeps serving the last good feed instead of wiping it.
           ls site/apx/feed/releases.*.json >/dev/null 2>&1 || {
             echo "::error::feed mirror produced no manifest - aborting to keep the last good feed live"
