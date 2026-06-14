@@ -1,32 +1,40 @@
 #!/bin/sh
 # Mirror the latest GitHub release's assets (a Velopack feed) into a destination dir.
-# Used by the GitHub Pages workflow: the token lives in Actions secrets, stays server-side,
-# and is never shipped to clients. Also runnable locally for testing.
+# Used by the GitHub Pages workflow. Also runnable locally for testing.
 #
-#   FEED_REPO=owner/repo FEED_TOKEN=ghp_xxx ./mirror-feed.sh ./out/apx/feed
+#   FEED_REPO=owner/repo [FEED_TOKEN=ghp_xxx] ./mirror-feed.sh ./out/apx/feed
+#
+# FEED_TOKEN is optional for public repositories.
 set -eu
 
 : "${FEED_REPO:?set FEED_REPO=owner/repo}"
-: "${FEED_TOKEN:?set FEED_TOKEN to a read-only Contents PAT}"
 DEST="${1:?usage: mirror-feed.sh <dest-dir>}"
 
 api="https://api.github.com/repos/${FEED_REPO}"
-auth="Authorization: Bearer ${FEED_TOKEN}"
+auth_header=""
+if [ -n "${FEED_TOKEN:-}" ]; then
+    auth_header="Authorization: Bearer ${FEED_TOKEN}"
+fi
 mkdir -p "$DEST"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
 # Latest non-prerelease release and its assets.
-curl -fsSL -H "$auth" -H "Accept: application/vnd.github+json" "$api/releases/latest" > "$tmp/rel.json"
+if [ -n "$auth_header" ]; then
+    curl -fsSL -H "$auth_header" -H "Accept: application/vnd.github+json" "$api/releases/latest" > "$tmp/rel.json"
+else
+    curl -fsSL -H "Accept: application/vnd.github+json" "$api/releases/latest" > "$tmp/rel.json"
+fi
 
-count=0
-# shellcheck disable=SC2030
 jq -r '.assets[] | "\(.id)\t\(.name)"' "$tmp/rel.json" | while IFS="$(printf '\t')" read -r id name; do
-    # Download to a .part then atomically rename so a half-written file is never served.
-    curl -fsSL -H "$auth" -H "Accept: application/octet-stream" \
-        "$api/releases/assets/${id}" -o "$DEST/${name}.part"
+    if [ -n "$auth_header" ]; then
+        curl -fsSL -H "$auth_header" -H "Accept: application/octet-stream" \
+            "$api/releases/assets/${id}" -o "$DEST/${name}.part"
+    else
+        curl -fsSL -H "Accept: application/octet-stream" \
+            "$api/releases/assets/${id}" -o "$DEST/${name}.part"
+    fi
     mv -f "$DEST/${name}.part" "$DEST/${name}"
-    count=$((count + 1))
     echo "  + ${name}"
 done
 
